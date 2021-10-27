@@ -7,6 +7,8 @@ __pycache__/
 src/get_camera/data
 devel/
 build/
+.catkin_workspace
+CMakeLists.txt
 
 # ---------------------------------- weights --------------------------------- #
 *.pt

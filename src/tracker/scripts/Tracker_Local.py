@@ -18,9 +18,6 @@ import torch
 import numpy as np
 import copy
 
-import EasyPySpin
-import PySpin
-
 from models.experimental import attempt_load
 from utils.general import (
     check_img_size, non_max_suppression, scale_coords, plot_one_box, set_logging)
@@ -278,9 +275,9 @@ def callback(data, args):
 def main():
     rospy.init_node("detector", anonymous=True)
     opt = {
-        "weights": "/home/nvidia/users/wushengjie/wsj_ws/src/tracker/scripts/runs/exp1/weights/best.pt",
-        "deep_sort_weights": "/home/nvidia/users/wushengjie/wsj_ws/src/tracker/scripts/deep_sort_pytorch/deep_sort/deep/checkpoint/ckpt.t7",
-        "config_deepsort": "/home/nvidia/users/wushengjie/wsj_ws/src/tracker/scripts/deep_sort_pytorch/configs/deep_sort.yaml",
+        "weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/runs/exp1/weights/best.pt",
+        "deep_sort_weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/deep_sort/deep/checkpoint/ckpt.t7",
+        "config_deepsort": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/configs/deep_sort.yaml",
         "imgsz": 640,
         "augment": False,
         "conf_thres": 0.4,
@@ -324,7 +321,7 @@ def main():
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         size = (1920, 1200)
         fps = 25
-        out_video = cv2.VideoWriter("/home/nvidia/users/wushengjie/wsj_ws/src/get_camera/data/out.avi", fourcc, fps, size)
+        out_video = cv2.VideoWriter("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/out.avi", fourcc, fps, size)
     else:
         out_video = None
 
@@ -345,23 +342,9 @@ def main():
     opt.update(temp)
 
     rospy.Subscriber('Traffic_Lights_Num', traffic_lights_num, callback, opt)
-    # cap = cv2.VideoCapture("/home/sheng/catkin_ws/src/get_camera/data/back_to_school.avi")
-    # Instance creation
-    cap = EasyPySpin.VideoCapture(0)
-    cap.cam.PixelFormat.SetValue(PySpin.PixelFormat_BayerRG8)
-
-    # Checking if it's connected to the camera
-    if not cap.isOpened():
-        print("Camera can't open\nexit")
-        return -1
-
-    # Set the camera parameters
-    cap.set(cv2.CAP_PROP_EXPOSURE, 1000)  # -1 sets exposure_time to auto
-    cap.set(cv2.CAP_PROP_GAIN, -1)  # -1 sets gain to auto
-    cap.set(cv2.CAP_PROP_FPS, 25)
+    cap = cv2.VideoCapture("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/test.avi")
     while not rospy.is_shutdown():
         ret, frame = cap.read()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BAYER_BG2BGR)
         if opt['flag']:
             detect_and_track(frame, opt)
         else:

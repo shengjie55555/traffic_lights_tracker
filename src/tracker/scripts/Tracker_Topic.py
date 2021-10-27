@@ -281,9 +281,9 @@ def image_callback(data, args):
 def main():
     rospy.init_node("detector", anonymous=True)
     opt = {
-        "weights": "/home/nvidia/users/wushengjie/wsj_ws/src/tracker/scripts/runs/exp1/weights/best.pt",
-        "deep_sort_weights": "/home/nvidia/users/wushengjie/wsj_ws/src/tracker/scripts/deep_sort_pytorch/deep_sort/deep/checkpoint/ckpt.t7",
-        "config_deepsort": "/home/nvidia/users/wushengjie/wsj_ws/src/tracker/scripts/deep_sort_pytorch/configs/deep_sort.yaml",
+        "weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/runs/exp1/weights/best.pt",
+        "deep_sort_weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/deep_sort/deep/checkpoint/ckpt.t7",
+        "config_deepsort": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/configs/deep_sort.yaml",
         "imgsz": 640,
         "augment": False,
         "conf_thres": 0.4,
@@ -327,7 +327,7 @@ def main():
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         size = (1920, 1200)
         fps = 25
-        out_video = cv2.VideoWriter("/home/nvidia/users/wushengjie/wsj_ws/src/get_camera/data/out.avi", fourcc, fps, size)
+        out_video = cv2.VideoWriter("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/out.avi", fourcc, fps, size)
     else:
         out_video = None
 
