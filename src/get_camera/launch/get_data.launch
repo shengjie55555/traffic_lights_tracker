@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="get_camera" name="webcam_puber" type="camera_publisher.py"/>
+    <node pkg="get_radar" name="radar_talker" type="radar_publisher"/>
+    <node pkg="get_radar" name="radar_visualization" type="radar_visualization.py"/>
+    <include file="$(find rslidar_pointcloud)/launch/rs_lidar_16.launch"/>
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find get_camera)/raw_data.rviz" output="screen"/>
+</launch>

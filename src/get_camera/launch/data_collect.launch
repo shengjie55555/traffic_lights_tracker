@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="rosbag" name="bag_record" type="record" args="-o $(find get_camera)/data/raw_data.bag -a" output="screen"/>
+</launch>
