@@ -384,7 +384,7 @@ def main():
 
     opt.update(temp)
 
-    rospy.Subscriber('Traffic_Lights_Num', traffic_lights_num, callback, opt)
+    rospy.Subscriber('Traffic_Lights_Num', traffic_lights_num, callback, opt, queue_size=1)
     cap = cv2.VideoCapture("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/test.avi")
     while not rospy.is_shutdown():
         ret, frame = cap.read()
