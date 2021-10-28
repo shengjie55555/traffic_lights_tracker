@@ -1,1 +1,37 @@
 # Traffic Lights Tracker
+## 1 系统组成
+整个系统包括三个模块：检测、跟踪、滤波和匹配。
+### 1.1 检测与跟踪
+参考该仓库[YOLOv5+DeepSORT](https://github.com/mikel-brostrom/Yolov5_DeepSort_Pytorch).主要改动在于增加了track的属性:
+```python
+self.box = box
+self.score = score
+self.cls = []
+if cls is not None:
+    self.cls.append(cls)
+```
+其中将cls变成列表，用于保存多帧的检测结果，取最新5帧的检测结果中的众数作为该目标id检测结果，这是第一次滤波。
+### 1.2 滤波与匹配
+根据规划模块发送的交通灯个数num，将检测结果和实际感兴趣的交通灯进行匹配。  
+step1：先按照左上顶点的y坐标**从小到大**（保证搜索到的第一个目标为感兴趣的交通灯）排序，然后从上到下搜索，直到找到boxes，计算找到的boxes平均的y坐标:y0，再次搜索[0, y0+10]区域内的boxes
+step2：如果个数大于num，选择概率最大的num个，用相对位置从左到右匹配  
+step3：如果个数小与num，首先根据id匹配之前的结果，新出现的目标则先**从左到右**（初始化后全为0，此时计算的最佳匹配结果都是第0个）排序后，按照和之前结果的距离匹配
+## 2 代码解释
+### 2.1 get_camera
+```shell
+camera_publisher: 加载本地视频文件，发送/camera/rgb/image_raw
+camera_subscriber: 订阅/camera/rgb/image_raw
+ros_driver_camera: 工业相机的ros驱动
+video: 采集工业相机的数据，保存成本地视频
+```
+备注：由于ros版本默认采用python2，因此无法使用cv_bridge
+### 2.2 tracker
+```shell
+driver_visual_detection: 检测和驱动
+local_visual_detection: 加载本地视频进行检测
+topic_visual_detection: 订阅/camera/rgb/image_raw,再进行检测
+```
+使用时需要通过Traffic_Light_Pos_Pub.cpp发送交通灯个数，数量为argv[0]
+```shell
+rosrun tracker tracker 2  # num = 2
+```
