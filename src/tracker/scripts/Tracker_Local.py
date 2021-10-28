@@ -33,19 +33,19 @@ class Traffic_Light_Filter:
     接收消息，确定前方红绿灯个数，按照tracker的输出从左到右依次赋值给results
     """
     def __init__(self, num=3, maxsize=5, init=False, init_data=2):
-        self.results = np.zeros((num, maxsize + 2), np.int)
+        self.results = np.zeros((num, maxsize + 3), np.int)
         self.maxsize = maxsize
         self.num = num
         self.init_data = init_data
         if init:
-            self.results[:, 2:] = init_data
+            self.results[:, 3:] = init_data
         print("Initialize Traffic Light Filter")
 
     def append(self, num, tracker_out):
         # 如果交通灯个数变化，重新初始化
         if self.results.shape[0] != num:
-            self.results = np.zeros((num, self.maxsize + 2), np.int) * 2
-            self.results[:, 2:] = self.init_data
+            self.results = np.zeros((num, self.maxsize + 3), np.int) * 2
+            self.results[:, 3:] = self.init_data
             print("Re-Initialize Traffic Light Filter")
         
         # tracker输出大等于于num时，采用相对位置
@@ -66,7 +66,8 @@ class Traffic_Light_Filter:
         for i in range(tracker_out.shape[0]):
             self.results[i, 0] = tracker_out[i, 4]         # id
             self.results[i, 1] = tracker_out[i, 0]         # x1
-            self.results[i, 2:-1] = self.results[i, 3:]
+            self.results[i, 2] = tracker_out[i, 1]         # y1
+            self.results[i, 3:-1] = self.results[i, 4:]
             self.results[i, -1] = tracker_out[i, 6]        # cls
     
     def match_by_id(self, num, tracker_out):
@@ -79,7 +80,8 @@ class Traffic_Light_Filter:
             if result_idx.size > 0:
                 self.results[result_idx, 0] = tracker_id
                 self.results[result_idx, 1] = tracker_out[i, 0]
-                self.results[result_idx, 2:-1] = self.results[result_idx, 3:]
+                self.results[result_idx, 2] = tracker_out[i, 1]
+                self.results[result_idx, 3:-1] = self.results[result_idx, 4:]
                 self.results[result_idx, -1] = tracker_out[i, 6]
                 r_idx.remove(result_idx)
                 t_idx.remove(i)
@@ -88,7 +90,8 @@ class Traffic_Light_Filter:
             result_idx = np.argmin(np.abs(tracker_out[i, 0] - self.results[r_idx, 1]))
             self.results[r_idx[result_idx], 0] = tracker_out[i, 4]
             self.results[r_idx[result_idx], 1] = tracker_out[i, 0]
-            self.results[r_idx[result_idx], 2:-1] = self.results[r_idx[result_idx], 3:]
+            self.results[r_idx[result_idx], 2] = tracker_out[i, 1]
+            self.results[r_idx[result_idx], 3:-1] = self.results[r_idx[result_idx], 4:]
             self.results[r_idx[result_idx], -1] = tracker_out[i, 6]
             r_idx.pop(result_idx)
 
@@ -126,6 +129,19 @@ def draw_boxes(img, bbox, identities, scores, cls, names, colors, line_thickness
         cv2.rectangle(
             img, (x1, y1), (x1 + t_size[0] + 3, y1 - t_size[1] - 4), color, -1, cv2.LINE_AA)
         cv2.putText(img, label, (x1, y1), 0, tl/3, [255, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
+    return img
+
+
+def draw_results(img, results, final_results, colors, line_thickness=None):
+    tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1
+    tf = max(tl - 1, 1)
+    for i in range(len(results)):
+        id, x1, y1 = [int(i) for i in results[i, :3]]
+        color = colors[final_results[i]]
+        label = "%d" % id
+        t_size = cv2.getTextSize(label, cv2.LINE_AA, fontScale=tl / 3, thickness=tf)[0]
+        cv2.rectangle(img, (x1, 0), (x1 + t_size[0], t_size[1] + 3), color, -1, cv2.LINE_AA)
+        cv2.putText(img, label, (x1, t_size[1] + 3), 0, tl/3, [255, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
     return img
 
 
@@ -240,12 +256,15 @@ def detect_and_track(data, args):
                     print("----------")
                     print(outputs)
                     args['filter'].append(args["lights_num"], outputs)
-                    print([2 if np.mean(result[2:]) <= 2.5 else 3 for result in args['filter'].results])
-                    bbox_xyxy = outputs[:, :4]
-                    identities = outputs[:, 4]
-                    scores = outputs[:, 5] / 100
-                    cls = outputs[:, 6]
-                    draw_boxes(img0, bbox_xyxy, identities, scores, cls, args["names"], args['colors'], 3)
+                    final_results = [2 if np.mean(result[3:]) <= 2.5 else 3 for result in args['filter'].results]
+                    print(final_results)
+                    # ------------------------------- visualization ------------------------------ #
+                    # bbox_xyxy = outputs[:, :4]
+                    # identities = outputs[:, 4]
+                    # scores = outputs[:, 5] / 100
+                    # cls = outputs[:, 6]
+                    # draw_boxes(img0, bbox_xyxy, identities, scores, cls, args["names"], args['colors'], 3)
+                    draw_results(img0, args["filter"].results, final_results, args["colors"], 3)
 
                 # Print time (inference + NMS)
                 # print('Detection And Tracking Done. %s (%.3fs)' % (s, t2 - t1))
