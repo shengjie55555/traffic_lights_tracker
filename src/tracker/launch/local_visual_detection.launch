@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="tracker" type="Tracker_Local.py" name="visual_detection" respawn="true" output="screen"/>
+</launch>

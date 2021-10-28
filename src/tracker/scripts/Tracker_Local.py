@@ -112,7 +112,6 @@ class Traffic_Light_Filter:
             r_idx.pop(result_idx)
 
 
-
 def xyxy_to_xywh(*xyxy):
     """" Calculates the relative bounding box from absolute pixel values. """
     bbox_left = min([xyxy[0].item(), xyxy[2].item()])
@@ -388,14 +387,15 @@ def main():
     cap = cv2.VideoCapture("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/test.avi")
     while not rospy.is_shutdown():
         ret, frame = cap.read()
-        if opt['flag']:
-            detect_and_track(frame, opt)
-        else:
-            img0_show = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
-            cv2.namedWindow("press q to quit", 0)
-            cv2.imshow("press q to quit", img0_show)
-            if cv2.waitKey(10) == ord('q'):  # q to quit
-                raise StopIteration
+        if ret:
+            if opt['flag']:
+                detect_and_track(frame, opt)
+            else:
+                img0_show = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+                cv2.namedWindow("press q to quit", 0)
+                cv2.imshow("press q to quit", img0_show)
+                if cv2.waitKey(10) == ord('q'):  # q to quit
+                    raise StopIteration
 
 
 if __name__ == "__main__":
