@@ -10,7 +10,7 @@ from os import name
 from numpy.core.fromnumeric import argmin, mean
 from numpy.core.numeric import ones
 import rospy
-from tracker.msg import traffic_lights_num
+from tracker.msg import traffic_lights_num, traffic_lights_state
 
 import time
 import cv2
@@ -276,6 +276,10 @@ def detect_and_track(data, args):
                     args['filter'].append(args["lights_num"], outputs)
                     final_results = [2 if np.mean(result[3:]) <= 2.5 else 3 for result in args['filter'].results]
                     print(final_results)
+                    for i in range(len(final_results)):
+                        args["state_msg"].state.append(final_results[i])
+                    args["pub"].publish(args["state_msg"])
+                    args["state_msg"].state = []
                     # ------------------------------- visualization ------------------------------ #
                     # bbox_xyxy = outputs[:, :4]
                     # identities = outputs[:, 4]
@@ -373,7 +377,9 @@ def main():
         "out_video": out_video,
         "flag": False,
         "filter": Traffic_Light_Filter(num=3, maxsize=5, init=True, init_data=2),
-        "lights_num": 0
+        "lights_num": 0,
+        "pub": rospy.Publisher("Traffic_Lights_State", traffic_lights_state, queue_size=1),
+        "state_msg": traffic_lights_state()
     }
 
     opt.update(temp)
