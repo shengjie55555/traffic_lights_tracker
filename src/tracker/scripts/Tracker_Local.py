@@ -71,7 +71,6 @@ class Traffic_Light_Filter:
         else:
             print("match by id")
             self.match_by_id(num, tracker_out)
-        print(self.results)
         
     def match_by_position(self, num, tracker_out):
         # 选择概率最大的num个跟踪结果
@@ -286,6 +285,7 @@ def detect_and_track(data, args):
                     # scores = outputs[:, 5] / 100
                     # cls = outputs[:, 6]
                     # draw_boxes(img0, bbox_xyxy, identities, scores, cls, args["names"], args['colors'], 3)
+                    print(args["filter"].results)
                     draw_results(img0, args["filter"].results, final_results, args["colors"], 3)
 
                 # Print time (inference + NMS)
