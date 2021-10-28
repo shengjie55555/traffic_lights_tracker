@@ -47,6 +47,21 @@ class Traffic_Light_Filter:
             self.results = np.zeros((num, self.maxsize + 3), np.int) * 2
             self.results[:, 3:] = self.init_data
             print("Re-Initialize Traffic Light Filter")
+
+        # 从上到下进行筛选，保证得到感兴趣的交通灯检测结果
+        tracker_out = tracker_out[np.argsort(tracker_out[:, 1])]
+        y0 = 400
+        mask = tracker_out[:, 1] < y0
+        while(y0 <= 1280):
+            if np.sum(mask) > 0:
+                pos = np.mean(tracker_out[mask], axis=0)
+                mask = tracker_out[:, 1] < (pos[1] + 10)
+                break
+            y0 += 10
+            mask = tracker_out[:, 1] < y0
+        tracker_out = tracker_out[mask]
+        print("selected tracker out")
+        print(tracker_out)
         
         # tracker输出大等于于num时，采用相对位置
         # tracker输出小与num时，采用id
@@ -73,6 +88,8 @@ class Traffic_Light_Filter:
     def match_by_id(self, num, tracker_out):
         r_idx = [_ for _ in range(num)]
         t_idx = [_ for _ in range(tracker_out.shape[0])]
+        # 从左到右排序
+        tracker_out = tracker_out[np.argsort(tracker_out[:, 0])]
         # 优先id匹配
         for i in range(tracker_out.shape[0]):
             tracker_id = tracker_out[i, 4]
@@ -254,6 +271,7 @@ def detect_and_track(data, args):
                     outputs = args['deepsort_model'].update(xywhs, confss, classess, img0)
                 if len(outputs):
                     print("----------")
+                    print("original tracker out")
                     print(outputs)
                     args['filter'].append(args["lights_num"], outputs)
                     final_results = [2 if np.mean(result[3:]) <= 2.5 else 3 for result in args['filter'].results]
