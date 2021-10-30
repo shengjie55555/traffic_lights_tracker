@@ -228,7 +228,7 @@ def detect_and_track(data, args):
             pred[-1][:, 1] = pred[-1][:, 1] * ratio_h + start1[0] * new_h / h
             mask = torch.max(pred[-1, :, 5:], dim=1)[1] <= 1
             pred[-1, mask, :] = 0
-            pred = pred.view(-1, 13).unsqueeze(0)
+            pred = pred.view(-1, 5+len(args["names"])).unsqueeze(0)
 
         # Apply NMS
         pred = non_max_suppression(pred, args["conf_thres"], args["iou_thres"],
