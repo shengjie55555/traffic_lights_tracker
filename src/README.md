@@ -35,4 +35,25 @@ topic_visual_detection: 订阅/camera/rgb/image_raw,再进行检测
 使用时需要通过Traffic_Light_Pos_Pub.cpp发送交通灯个数，数量为argv[0]
 ```shell
 rosrun tracker tracker 2  # num = 2
+```  
+## 使用步骤
+步骤1：下载仓库，编译
+```shell
+cd Traffic_Lights_Tracker
+catkin_make
+source ./devel/setup.bash
+```
+步骤2：拷贝权重
+```shell
+cp /path_to_yolo_weights/best.pt ./src/tracker/scripts/
+cp /path_to_deep_sort_weights/ckpt.t7 ./src/tracker/scripts/
+```
+步骤3：修改路径
+```shell
+打开./src/tracker/scripts/common.py，搜索todo，总共有两次，修改实际权重和配置文件的路径
+```
+步骤4：运行
+```shell
+roslaunch tracker local_visual_detection.launch  # 打开驱动和检测程序
+rosrun tracker tracker 3  # 用于发送lights数量，0：关闭检测
 ```
