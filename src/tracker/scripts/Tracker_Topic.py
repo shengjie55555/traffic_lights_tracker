@@ -38,7 +38,7 @@ def image_callback(data, args):
 
 def main():
     rospy.init_node("detector", anonymous=True)
-    opt = load_param_8()
+    opt = load_param_2()
     opt["image_flag"] = False
     opt["image"] = Image()
 
@@ -49,7 +49,7 @@ def main():
         if opt["image_flag"]:
             frame = np.frombuffer(opt["image"].data, dtype=np.uint8).reshape(opt["image"].height, opt["image"].width, -1)
             if opt['flag']:
-                detect_and_track_8(frame, opt)
+                detect_and_track_2(frame, opt)
             else:
                 img0_show = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
                 cv2.namedWindow("press q to quit", 0)

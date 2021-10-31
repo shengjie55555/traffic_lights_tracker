@@ -499,6 +499,7 @@ def detect_and_track_2(data, args):
 
 def load_param_2():
     opt = {
+        # todo: 修改weights和deep_sort_weights的路径为实际权重位置，config_deepsort修改路径即可
         "weights": "/home/sheng/code_space/python_projects/competition/yolov5/best.pt",
         "deep_sort_weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/deep_sort/deep/checkpoint/ckpt.t7",
         "config_deepsort": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/configs/deep_sort.yaml",
@@ -542,6 +543,7 @@ def load_param_2():
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         size = (1920, 1200)
         fps = 25
+        # todo: 此处为输出检测结果的路径
         out_video = cv2.VideoWriter("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/out.avi", fourcc, fps, size)
     else:
         out_video = None
