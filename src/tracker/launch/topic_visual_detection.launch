@@ -1,4 +1,4 @@
 <launch>
-    <node pkg="get_camera" name="cam_puber" type="camera_publisher.py" respawn="true"/>
+    <node pkg="get_camera" name="cam_puber" type="ros_driver_camera.py" respawn="true"/>
     <node pkg="tracker" name="visual_detection" type="Tracker_Topic.py" respawn="true" output="screen"/>
 </launch>

@@ -555,9 +555,9 @@ def load_param_2():
         "names": names,
         "colors": colors,
         "out_video": out_video,
-        "flag": True,
+        "flag": False,
         "filter": Traffic_Light_Filter(num=3, maxsize=5, init=True, init_data=2),
-        "lights_num": 3,
+        "lights_num": 0,
         "pub": rospy.Publisher("Traffic_Lights_State", traffic_lights_state, queue_size=1),
         "state_msg": traffic_lights_state()
     }

@@ -31,7 +31,7 @@ from common import load_param_8, detect_and_track_8, callback, load_param_2, det
 
 def main():
     rospy.init_node("detector", anonymous=True)
-    opt = load_param_8()
+    opt = load_param_2()
     
     rospy.Subscriber('Traffic_Lights_Num', traffic_lights_num, callback, opt, queue_size=1)
     cap = cv2.VideoCapture("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/test.avi")
@@ -39,7 +39,7 @@ def main():
         ret, frame = cap.read()
         if ret:
             if opt['flag']:
-                detect_and_track_8(frame, opt)
+                detect_and_track_2(frame, opt)
             else:
                 img0_show = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
                 cv2.namedWindow("press q to quit", 0)
