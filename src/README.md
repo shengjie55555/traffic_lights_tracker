@@ -64,6 +64,6 @@ cp /path_to_deep_sort_weights/ckpt.t7 ./src/tracker/scripts/
 ```
 步骤4：运行
 ```shell
-roslaunch tracker local_visual_detection.launch  # 打开驱动和检测程序
+roslaunch tracker topic_visual_detection.launch  # 打开驱动和检测程序
 rosrun tracker tracker 3  # 用于发送lights数量，0：关闭检测
 ```
