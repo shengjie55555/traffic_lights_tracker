@@ -13,16 +13,31 @@ from cv_bridge import CvBridge, CvBridgeError
 import cv2
 
 
-def callback(data):
+def callback(data, args):
     print(float(data.header.stamp.secs) + float(data.header.stamp.nsecs) * 1e-9)
     cv_img = np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1)
+    if args['save_img']:
+        args['out_video'].write(cv_img)
     cv2.imshow("frame", cv_img)
     cv2.waitKey(3)
 
 
 def displayWebcam():
     rospy.init_node('webcam_display', anonymous=True)
-    rospy.Subscriber('camera/rgb/image_raw', Image, callback)
+    opt = {
+        # todo: 设置为True时保存视频，指定保存结果的路径
+        'save_img': False,
+        'dst_dir': "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/out.avi"
+    }
+    if opt['save_img']:
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        size = (1920, 1200)
+        fps = 25
+        out_video = cv2.VideoWriter(opt['dst_dir'], fourcc, fps, size)
+    else:
+        out_video = None
+    opt['out_video'] = out_video
+    rospy.Subscriber('camera/rgb/image_raw', Image, callback, opt)
     rospy.spin()
 
 

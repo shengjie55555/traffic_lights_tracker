@@ -36,7 +36,17 @@ topic_visual_detection: 订阅/camera/rgb/image_raw,再进行检测
 ```shell
 rosrun tracker tracker 2  # num = 2
 ```  
-## 使用步骤
+## 3 采集数据
+方法1：
+```shell
+rosrun get_camera video.py  # 直接打开驱动，保存视频
+```
+方法2：
+```shell
+rosrun get_camera ros_driver_camera.py  # 打开驱动，发布话题
+rosrun get_camera camera_subscriber.py  # 订阅话题，如果要保存视频，在该文件内搜索todo修改路径
+```
+## 4 使用步骤
 步骤1：下载仓库，编译
 ```shell
 cd Traffic_Lights_Tracker

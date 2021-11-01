@@ -37,17 +37,18 @@ def main():
     while True:
         t0 = time.time()
         ret, frame = cap.read()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BayerBG2BGR)  # convert to RGB
-        print("single frame time: %.3f s" % (time.time() - t0))
-        out.write(frame)
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BayerBG2BGR)  # convert to RGB
+            print("single frame time: %.3f s" % (time.time() - t0))
+            out.write(frame)
 
-        # msg = bridge.cv2_to_imgmsg(frame, encoding="bgr8")
-        # msg.header.stamp = rospy.Time.now()
-        # img_pub.publish(msg)
-        # print('** publishing webcam_frame ***')
+            # msg = bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+            # msg.header.stamp = rospy.Time.now()
+            # img_pub.publish(msg)
+            # print('** publishing webcam_frame ***')
 
-        img_show = cv2.resize(frame, None, fx=0.25, fy=0.25)
-        cv2.imshow("press q to quit", img_show)
+            img_show = cv2.resize(frame, None, fx=0.25, fy=0.25)
+            cv2.imshow("press q to quit", img_show)
 
         key = cv2.waitKey(1)
         if key == ord("q"):
