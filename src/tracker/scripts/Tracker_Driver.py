@@ -10,7 +10,7 @@ from os import name
 from numpy.core.fromnumeric import argmin, mean
 from numpy.core.numeric import ones
 import rospy
-from tracker.msg import traffic_lights_num, traffic_lights_state
+from std_msgs.msg import Int8
 
 import time
 import cv2
@@ -37,7 +37,7 @@ def main():
     rospy.init_node("detector", anonymous=True)
     opt = load_param_8()
 
-    rospy.Subscriber('Traffic_Lights_Num', traffic_lights_num, callback, opt, queue_size=1)
+    rospy.Subscriber('Traffic_Lights_Num', Int8, callback, opt, queue_size=1)
     
     # Instance creation
     cap = EasyPySpin.VideoCapture(0)

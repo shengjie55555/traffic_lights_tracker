@@ -10,7 +10,7 @@ from os import name
 from numpy.core.fromnumeric import argmin, mean
 from numpy.core.numeric import ones
 import rospy
-from tracker.msg import traffic_lights_num, traffic_lights_state
+from std_msgs.msg import Int8
 from sensor_msgs.msg import Image
 
 import time
@@ -42,7 +42,7 @@ def main():
     opt["image_flag"] = False
     opt["image"] = Image()
 
-    rospy.Subscriber('Traffic_Lights_Num', traffic_lights_num, callback, opt, queue_size=1)
+    rospy.Subscriber('Traffic_Lights_Num', Int8, callback, opt, queue_size=1)
     rospy.Subscriber('camera/rgb/image_raw', Image, image_callback, opt, queue_size=1)
     
     while not rospy.is_shutdown():

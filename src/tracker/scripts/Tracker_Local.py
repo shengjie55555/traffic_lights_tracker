@@ -10,7 +10,7 @@ from os import name
 from numpy.core.fromnumeric import argmin, mean
 from numpy.core.numeric import ones
 import rospy
-from tracker.msg import traffic_lights_num, traffic_lights_state
+from std_msgs.msg import Int8
 
 import time
 import cv2
@@ -33,7 +33,7 @@ def main():
     rospy.init_node("detector", anonymous=True)
     opt = load_param_2()
     
-    rospy.Subscriber('Traffic_Lights_Num', traffic_lights_num, callback, opt, queue_size=1)
+    rospy.Subscriber('Traffic_Lights_Num', Int8, callback, opt, queue_size=1)
     cap = cv2.VideoCapture("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/test.avi")
     while not rospy.is_shutdown():
         ret, frame = cap.read()

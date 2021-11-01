@@ -10,7 +10,7 @@ from os import name
 from numpy.core.fromnumeric import argmin, mean
 from numpy.core.numeric import ones
 import rospy
-from tracker.msg import traffic_lights_num, traffic_lights_state
+from std_msgs.msg import Int8MultiArray
 
 import time
 import cv2
@@ -275,9 +275,9 @@ def detect_and_track_8(data, args):
                     final_results = [2 if np.mean(result[3:]) <= 2.5 else 3 for result in args['filter'].results]
                     print(final_results)
                     for i in range(len(final_results)):
-                        args["state_msg"].state.append(final_results[i])
+                        args["state_msg"].data.append(final_results[i])
                     args["pub"].publish(args["state_msg"])
-                    args["state_msg"].state = []
+                    args["state_msg"].data = []
                     # ------------------------------- visualization ------------------------------ #
                     # bbox_xyxy = outputs[:, :4]
                     # identities = outputs[:, 4]
@@ -367,8 +367,8 @@ def load_param_8():
         "flag": False,
         "filter": Traffic_Light_Filter(num=3, maxsize=5, init=True, init_data=2),
         "lights_num": 0,
-        "pub": rospy.Publisher("Traffic_Lights_State", traffic_lights_state, queue_size=1),
-        "state_msg": traffic_lights_state()
+        "pub": rospy.Publisher("Traffic_Lights_State", Int8MultiArray, queue_size=1),
+        "state_msg": Int8MultiArray()
     }
 
     opt.update(temp)
@@ -376,11 +376,11 @@ def load_param_8():
 
 
 def callback(data, args):
-    if data.num <= 0:
+    if data.data <= 0:
         args["flag"] = False
     else:
         args['flag'] = True
-        args["lights_num"] = int(data.num)
+        args["lights_num"] = int(data.data)
     # print(data.num, args["lights_num"])
 
 
@@ -469,9 +469,9 @@ def detect_and_track_2(data, args):
                     final_results = [0 if np.mean(result[3:]) <= 0.5 else 1 for result in args['filter'].results]
                     print(final_results)
                     for i in range(len(final_results)):
-                        args["state_msg"].state.append(final_results[i])
+                        args["state_msg"].data.append(final_results[i])
                     args["pub"].publish(args["state_msg"])
-                    args["state_msg"].state = []
+                    args["state_msg"].data = []
                     # ------------------------------- visualization ------------------------------ #
                     # bbox_xyxy = outputs[:, :4]
                     # identities = outputs[:, 4]
@@ -560,8 +560,8 @@ def load_param_2():
         "flag": False,
         "filter": Traffic_Light_Filter(num=3, maxsize=5, init=True, init_data=2),
         "lights_num": 0,
-        "pub": rospy.Publisher("Traffic_Lights_State", traffic_lights_state, queue_size=1),
-        "state_msg": traffic_lights_state()
+        "pub": rospy.Publisher("Traffic_Lights_State", Int8MultiArray, queue_size=1),
+        "state_msg": Int8MultiArray()
     }
 
     opt.update(temp)
