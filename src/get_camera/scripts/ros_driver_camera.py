@@ -32,18 +32,19 @@ def main():
     image = Image()
     image.height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     image.width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    image.encoding = "rgb8"
+    image.encoding = "bgr8"
 
     # Start capturing
     while True:
         t0 = time.time()
         ret, frame = cap.read()
         if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BayerBG2BGR)  # convert to RGB
+            frame = cv2.cvtColor(frame, cv2.COLOR_BayerBG2BGR)  # convert to BGR
             print("single frame time: %.3f s" % (time.time() - t0))
 
-            image.data = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)).tobytes()
+            # image.data = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)).tobytes()
             # msg = bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+            image.data = np.array(frame).tobytes()
             image.header.stamp = rospy.Time.now()
             img_pub.publish(image)
 
