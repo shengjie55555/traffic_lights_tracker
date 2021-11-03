@@ -48,6 +48,7 @@ def main():
     while not rospy.is_shutdown():
         if opt["image_flag"]:
             frame = np.frombuffer(opt["image"].data, dtype=np.uint8).reshape(opt["image"].height, opt["image"].width, -1)
+            frame = np.ascontiguousarray(frame)
             if opt['flag']:
                 detect_and_track_2(frame, opt)
             else:
