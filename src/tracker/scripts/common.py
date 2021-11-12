@@ -691,7 +691,7 @@ def load_param_gmsl2_3():
         "augment": False,
         "conf_thres": 0.4,
         "iou_thres": 0.5,
-        "patch_mode": True,
+        "patch_mode": False,
         "agnostic_nms": False,
         "classes": None,
         "view_img": True,
