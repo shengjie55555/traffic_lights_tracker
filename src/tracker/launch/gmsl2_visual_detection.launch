@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="get_camera" name="gmsl2_cam_puber" type="ros_driver_gmsl2_camera.py" respawn="true"/>
+    <node pkg="tracker" name="visual_detection" type="tracker_gmsl2.py" respawn="true" output="screen"/>
+</launch>

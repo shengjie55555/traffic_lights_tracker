@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="tracker" type="Tracker_Driver.py" name="visual_detection" respawn="true" output="screen"/>
-</launch>

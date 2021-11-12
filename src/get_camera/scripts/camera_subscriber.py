@@ -37,7 +37,7 @@ def displayWebcam():
     else:
         out_video = None
     opt['out_video'] = out_video
-    rospy.Subscriber('camera/rgb/image_raw', Image, callback, opt)
+    rospy.Subscriber('camera/rgb/image_pointgrey', Image, callback, opt)
     rospy.spin()
 
 

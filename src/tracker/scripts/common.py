@@ -188,7 +188,7 @@ def transform(patch, args):
     return patch[-1], (h, w)
 
 
-def detect_and_track_8(data, args):
+def detect_and_track_pointgrey_8(data, args):
     with torch.no_grad():
         # Run inference
         t0 = time.time()
@@ -303,7 +303,7 @@ def detect_and_track_8(data, args):
         # print('Visualization Done. (%.3fs)' % (time.time() - t0))
 
 
-def load_param_8():
+def load_param_pointgrey_8():
     opt = {
         "weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/runs/exp1/weights/best.pt",
         "deep_sort_weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/deep_sort/deep/checkpoint/ckpt.t7",
@@ -384,7 +384,7 @@ def callback(data, args):
     # print(data.num, args["lights_num"])
 
 
-def detect_and_track_2(data, args):
+def detect_and_track_pointgrey_3(data, args):
     with torch.no_grad():
         # Run inference
         t0 = time.time()
@@ -497,7 +497,191 @@ def detect_and_track_2(data, args):
         # print('Visualization Done. (%.3fs)' % (time.time() - t0))
 
 
-def load_param_2():
+def load_param_pointgrey_3():
+    opt = {
+        # todo: 修改weights和deep_sort_weights的路径为实际权重位置，config_deepsort修改路径即可
+        "weights": "/home/sheng/code_space/python_projects/competition/yolov5/best.pt",
+        "deep_sort_weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/deep_sort/deep/checkpoint/ckpt.t7",
+        "config_deepsort": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/tracker/scripts/deep_sort_pytorch/configs/deep_sort.yaml",
+        "imgsz": 640,
+        "augment": False,
+        "conf_thres": 0.4,
+        "iou_thres": 0.5,
+        "patch_mode": True,
+        "agnostic_nms": False,
+        "classes": None,
+        "view_img": True,
+        "save_img": False,
+        "device": ''}
+
+    # Initialize
+    set_logging()
+    device = select_device(opt["device"])
+    half = device.type != 'cpu'  # half precision only supported on CUDA
+
+    # Load model
+    model = attempt_load(opt["weights"], map_location=device)  # load FP32 model
+    imgsz = check_img_size(opt["imgsz"], s=model.stride.max())  # check img_size
+    if half:
+        model.half()  # to FP16
+
+    # Initial deepsort
+    cfg = get_config()
+    cfg.merge_from_file(opt["config_deepsort"])
+    deepsort = DeepSort(opt["deep_sort_weights"],
+                        max_dist=cfg.DEEPSORT.MAX_DIST, min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
+                        nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP, max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
+                        max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
+                        use_cuda=True)
+
+    # Get names and colors: ['red', 'green', 'other']
+    names = model.module.names if hasattr(model, 'module') else model.names
+    colors = [[0, 0, 255], [0, 255, 0], [0, 255, 255]]
+
+    # Save result as video
+    if opt['save_img']:
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        size = (1920, 1200)
+        fps = 25
+        # todo: 此处为输出检测结果的路径
+        out_video = cv2.VideoWriter("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/out.avi", fourcc, fps, size)
+    else:
+        out_video = None
+
+    temp = {
+        "device": device,
+        "half": half,
+        "model": model,
+        "deepsort_model": deepsort,
+        "imgsz": imgsz,
+        "names": names,
+        "colors": colors,
+        "out_video": out_video,
+        "flag": False,
+        "filter": Traffic_Light_Filter(num=3, maxsize=5, init=True, init_data=0),
+        "lights_num": 0,
+        "pub": rospy.Publisher("Traffic_Lights_State", Int8MultiArray, queue_size=1),
+        "state_msg": Int8MultiArray()
+    }
+
+    opt.update(temp)
+    return opt
+
+
+def detect_and_track_gmsl2_3(data, args):
+    with torch.no_grad():
+        # Run inference
+        t0 = time.time()
+
+        # Read img from sensor_msg
+        img0 = data
+
+        if args["patch_mode"]:
+            # Obtain patch
+            center = np.array([1080 / 2, 1920 / 2])
+            h, w = img0.shape[0], img0.shape[1]
+            scale0, scale1 = 1 / 8, 1 / 6
+            (patch0, patch1), (ratio_h, ratio_w), start1 = get_patch(img0, center, (h, w), scale0, scale1)
+
+            # Padded resize
+            patch, (new_h, new_w) = transform((patch0, patch1), args)
+        else:
+            patch = letterbox(img0, new_shape=args["imgsz"])[0]
+            patch = patch[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+            patch = np.ascontiguousarray(patch)
+
+        patch = torch.from_numpy(patch).to(args["device"])
+        patch = patch.half() if args["half"] else patch.float()  # uint8 to fp16/32
+        patch /= 255.0  # 0 - 255 to 0.0 - 1.0
+        if patch.ndimension() == 3:
+            patch = patch.unsqueeze(0)
+
+        # Inference
+        t1 = time_synchronized()
+        pred = args["model"](patch, augment=args["augment"])[0]
+
+        if args["patch_mode"]:
+            # Transform to img coordinate and concatenate
+            pred[-1][:, 2] *= ratio_w
+            pred[-1][:, 3] *= ratio_h
+            pred[-1][:, 0] = pred[-1][:, 0] * ratio_w + start1[1] * new_w / w
+            pred[-1][:, 1] = pred[-1][:, 1] * ratio_h + start1[0] * new_h / h
+            pred = pred.view(-1, 5+len(args["names"])).unsqueeze(0)
+
+        # Apply NMS
+        pred = non_max_suppression(pred, args["conf_thres"], args["iou_thres"],
+                                   classes=args["classes"], agnostic=args["agnostic_nms"])
+        t2 = time_synchronized()
+
+        # Process detections
+        for i, det in enumerate(pred):  # detections per image
+            s = '%gx%g ' % patch.shape[2:]  # print string
+            if det is not None and len(det):
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_coords(patch.shape[2:], det[:, :4], img0.shape).round()
+
+                # Print results
+                for c in det[:, -1].unique():
+                    n = (det[:, -1] == c).sum()  # detections per class
+                    s += '%g %ss, ' % (n, args["names"][int(c)])  # add to string
+
+                # Deepsort tracking
+                xywh_bboxs, confs, classes = [], [], []
+                for *xyxy, conf, cls in det:
+                    # Draw detection result
+                    # if args["view_img"]:  # Add bbox to image
+                    #     label = '%s %.2f' % (args["names"][int(cls)], conf)
+                    #     plot_one_box(xyxy, img0, label=label, color=args["colors"][int(cls)], line_thickness=1)
+                    # To deep sort format
+                    if cls <= 1:
+                        x_c, y_c, bbox_w, bbox_h = xyxy_to_xywh(*xyxy)
+                        xywh_obj = [x_c, y_c, bbox_w, bbox_h]
+                        xywh_bboxs.append(xywh_obj)
+                        confs.append([conf.item()])
+                        classes.append([cls.item()])
+                xywhs = torch.Tensor(xywh_bboxs)
+                confss = torch.Tensor(confs)
+                classess = torch.Tensor(classes)
+                outputs = []
+                if xywhs.size()[0] > 0:
+                    outputs = args['deepsort_model'].update(xywhs, confss, classess, img0)
+                if len(outputs):
+                    print("----------")
+                    print("original tracker out")
+                    print(outputs)
+                    args['filter'].append(args["lights_num"], outputs)
+                    final_results = [0 if np.mean(result[3:]) <= 0.5 else 1 for result in args['filter'].results]
+                    print(final_results)
+                    for i in range(len(final_results)):
+                        args["state_msg"].data.append(final_results[i])
+                    args["pub"].publish(args["state_msg"])
+                    args["state_msg"].data = []
+                    # ------------------------------- visualization ------------------------------ #
+                    # bbox_xyxy = outputs[:, :4]
+                    # identities = outputs[:, 4]
+                    # scores = outputs[:, 5] / 100
+                    # cls = outputs[:, 6]
+                    # draw_boxes(img0, bbox_xyxy, identities, scores, cls, args["names"], args['colors'], 3)
+                    print(args["filter"].results)
+                    draw_results(img0, args["filter"].results, final_results, args["colors"], 3)
+
+                # Print time (inference + NMS)
+                # print('Detection And Tracking Done. %s (%.3fs)' % (s, t2 - t1))
+
+        # Stream results
+        if args["view_img"]:
+            img0_show = cv2.resize(img0, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+            cv2.namedWindow("press q to quit", 0)
+            cv2.imshow("press q to quit", img0_show)
+            if cv2.waitKey(1) == ord('q'):  # q to quit
+                raise StopIteration
+        if args['save_img']:
+            args['out_video'].write(img0)
+
+        # print('Visualization Done. (%.3fs)' % (time.time() - t0))
+
+
+def load_param_gmsl2_3():
     opt = {
         # todo: 修改weights和deep_sort_weights的路径为实际权重位置，config_deepsort修改路径即可
         "weights": "/home/sheng/code_space/python_projects/competition/yolov5/best.pt",

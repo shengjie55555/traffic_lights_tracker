@@ -20,17 +20,17 @@ step3：如果个数小与num，首先根据id匹配之前的结果，新出现�
 ## 2 代码解释
 ### 2.1 get_camera
 ```shell
-camera_publisher: 加载本地视频文件，发送/camera/rgb/image_raw
-camera_subscriber: 订阅/camera/rgb/image_raw
-ros_driver_camera: 工业相机的ros驱动
+camera_publisher: 加载本地视频文件，发送/camera/rgb/image_pointgrey
+camera_subscriber: 订阅/camera/rgb/image_pointgrey
+ros_driver_pointgrey_camera: 工业相机的ros驱动  
+ros_driver_gmsl2_camera: gmsl2相机的ros驱动
 video: 采集工业相机的数据，保存成本地视频
 ```
 备注：由于ros版本默认采用python2，因此无法使用cv_bridge
 ### 2.2 tracker
 ```shell
-driver_visual_detection: 检测和驱动
-local_visual_detection: 加载本地视频进行检测
-topic_visual_detection: 订阅/camera/rgb/image_raw,再进行检测
+pointgrey_visual_detection: 订阅/camera/rgb/image_pointgrey,再进行检测
+gmsl2_visual_detection: 订阅/camera/rgb/image_gmsl2,再进行检测
 ```
 使用时需要通过Traffic_Light_Pos_Pub.cpp发送交通灯个数，数量为argv[0]
 ```shell
@@ -64,6 +64,6 @@ cp /path_to_deep_sort_weights/ckpt.t7 ./src/tracker/scripts/
 ```
 步骤4：运行
 ```shell
-roslaunch tracker topic_visual_detection.launch  # 打开驱动和检测程序
+roslaunch tracker gmsl2_visual_detection.launch  # 打开驱动和检测程序
 rosrun tracker tracker 3  # 用于发送lights数量，0：关闭检测
 ```

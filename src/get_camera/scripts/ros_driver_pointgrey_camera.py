@@ -11,8 +11,8 @@ from cv_bridge import CvBridge
 
 def main():
     # ros
-    rospy.init_node("pt_grey_publisher", anonymous=True)
-    img_pub = rospy.Publisher('camera/rgb/image_raw', Image, queue_size=2)
+    rospy.init_node("pointgrey_publisher", anonymous=True)
+    img_pub = rospy.Publisher('camera/rgb/image_pointgrey', Image, queue_size=2)
     bridge = CvBridge()
 
     # Instance creation
@@ -35,7 +35,7 @@ def main():
     image.encoding = "bgr8"
 
     # Start capturing
-    while True:
+    while not rospy.is_shutdown():
         t0 = time.time()
         ret, frame = cap.read()
         if ret:

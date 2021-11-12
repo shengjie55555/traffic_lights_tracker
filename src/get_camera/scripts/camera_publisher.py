@@ -11,7 +11,7 @@ import sys
  
 def webcamImagePub():
     rospy.init_node('webcam_puber', anonymous=True)
-    img_pub = rospy.Publisher('camera/rgb/image_raw', Image, queue_size=1)
+    img_pub = rospy.Publisher('camera/rgb/image_pointgrey', Image, queue_size=1)
     bridge = CvBridge()
     rate = rospy.Rate(30)
  
