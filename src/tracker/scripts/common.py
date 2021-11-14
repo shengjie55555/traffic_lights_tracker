@@ -725,7 +725,7 @@ def load_param_gmsl2_3():
     # Save result as video
     if opt['save_img']:
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        size = (1920, 1200)
+        size = (1920, 1080)
         fps = 25
         # todo: 此处为输出检测结果的路径
         out_video = cv2.VideoWriter("/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/get_camera/data/out.avi", fourcc, fps, size)
