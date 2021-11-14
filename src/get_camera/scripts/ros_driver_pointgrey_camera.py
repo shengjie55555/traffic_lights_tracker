@@ -48,12 +48,12 @@ def main():
             image.header.stamp = rospy.Time.now()
             img_pub.publish(image)
 
-            img_show = cv2.resize(frame, None, fx=0.25, fy=0.25)
-            cv2.imshow("press q to quit", img_show)
+            # img_show = cv2.resize(frame, None, fx=0.25, fy=0.25)
+            # cv2.imshow("press q to quit", img_show)
 
-            key = cv2.waitKey(1)
-            if key == ord("q"):
-                break
+            # key = cv2.waitKey(1)
+            # if key == ord("q"):
+            #     break
 
     cv2.destroyAllWindows()
     cap.release()
