@@ -31,5 +31,5 @@ cp /path_to_yolo_weights/best.pt ./src/detector_node/scripts/
 步骤4：运行
 ```shell
 rosrun get_camera ros_driver_pointgrey_camera  # 打开相机驱动
-rosrun detector_node detector  # 检测
+rosrun detector_node detector.py  # 检测
 ```
