@@ -19,10 +19,12 @@ from utils.general import (
     check_img_size, non_max_suppression, scale_coords, plot_one_box, set_logging)
 from utils.torch_utils import select_device, time_synchronized
 from utils.datasets import letterbox
+from detector_node.msg import target, multi_target
 
 
 def callback(data, args):
     with torch.no_grad():
+        multi_t = multi_target()
         # Run inference
         t0 = time.time()
 
@@ -67,6 +69,16 @@ def callback(data, args):
 
                     # Write results
                     for *xyxy, conf, cls in reversed(det):
+                        # publish results
+                        single_t = target()
+                        single_t.Class = args["names"][int(cls)]
+                        single_t.score = conf
+                        single_t.xmin = int(xyxy[0])
+                        single_t.ymin = int(xyxy[1])
+                        single_t.xmax = int(xyxy[2])
+                        single_t.ymax = int(xyxy[3])
+                        multi_t.targets.append(single_t)
+
                         if args["view_img"]:  # Add bbox to image
                             label = '%s %.2f' % (args["names"][int(cls)], conf)
                             plot_one_box(xyxy, img0, label=label, color=args["colors"][int(cls)], line_thickness=3)
@@ -86,6 +98,8 @@ def callback(data, args):
             cv2.imshow("original_image", img0)
             if cv2.waitKey(1) == ord('q'):  # q to quit
                 raise StopIteration
+        
+        args["pub"].publish(multi_t)
 
         print('Done. (%.3fs)' % (time.time() - t0))
 
@@ -94,7 +108,7 @@ def main():
     rospy.init_node("detector", anonymous=True)
     opt = {
         # todo: 修改权重的实际位置
-        "weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/detector/scripts/best.pt",
+        "weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/detector_node/scripts/best.pt",
         "imgsz": 640,
         "augment": False,
         "conf_thres": 0.4,
@@ -125,7 +139,8 @@ def main():
         "model": model,
         "imgsz": imgsz,
         "names": names,
-        "colors": colors
+        "colors": colors,
+        "pub": rospy.Publisher("/bboxes", multi_target, queue_size=1)
     }
 
     opt.update(temp)
