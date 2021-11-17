@@ -94,7 +94,7 @@ def main():
     rospy.init_node("detector", anonymous=True)
     opt = {
         # todo: 修改权重的实际位置
-        "weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/detector/scripts/runs/exp1/weights/last.pt",
+        "weights": "/home/sheng/code_space/python_projects/competition/Traffic_Lights_Tracker/src/detector/scripts/best.pt",
         "imgsz": 640,
         "augment": False,
         "conf_thres": 0.4,

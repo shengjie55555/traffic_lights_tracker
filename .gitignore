@@ -8,12 +8,13 @@ src/get_camera/data
 devel/
 build/
 .catkin_workspace
-CMakeLists.txt
+src/CMakeLists.txt
 
 # ---------------------------------- weights --------------------------------- #
 *.pt
 *.jpg
 *.png
+!best.pt
 
 # ---------------------------------- vscode ---------------------------------- #
 .vscode
